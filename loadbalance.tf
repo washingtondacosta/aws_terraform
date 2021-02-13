@@ -12,7 +12,7 @@ resource "aws_lb_target_group" "tg" {
   name     = "LoadBalance"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = aws_vpc.vpc.id
+  vpc_id   = aws_vpc.primary.id
 
   health_check {
     path              = "/"

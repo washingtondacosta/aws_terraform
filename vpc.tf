@@ -2,7 +2,7 @@ data "aws_availability_zones" "azs" {
 
 }
 
-resource "aws_vpc" "vpc" {
+resource "aws_vpc" "primary" {
   cidr_block = "172.0.0.0/16"
 
   tags = {
@@ -11,7 +11,7 @@ resource "aws_vpc" "vpc" {
 }
 
 resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = aws_vpc.primary.id
 
   tags = {
     "Name" = "Gateway"
@@ -19,7 +19,7 @@ resource "aws_internet_gateway" "igw" {
 }
 
 resource "aws_subnet" "public1" {
-  vpc_id            = aws_vpc.vpc.id
+  vpc_id            = aws_vpc.primary.id
   cidr_block        = "172.0.1.0/24"
   availability_zone = "${var.aws_reg}a"
   tags = {
@@ -28,7 +28,7 @@ resource "aws_subnet" "public1" {
 }
 
 resource "aws_subnet" "private1" {
-  vpc_id            = aws_vpc.vpc.id
+  vpc_id            = aws_vpc.primary.id
   cidr_block        = "172.0.2.0/24"
   availability_zone = "${var.aws_reg}a"
   tags = {
@@ -37,7 +37,7 @@ resource "aws_subnet" "private1" {
 }
 
 resource "aws_subnet" "public2" {
-  vpc_id            = aws_vpc.vpc.id
+  vpc_id            = aws_vpc.primary.id
   cidr_block        = "172.0.3.0/24"
   availability_zone = "${var.aws_reg}b"
   tags = {
@@ -46,7 +46,7 @@ resource "aws_subnet" "public2" {
 }
 
 resource "aws_subnet" "private2" {
-  vpc_id            = aws_vpc.vpc.id
+  vpc_id            = aws_vpc.primary.id
   cidr_block        = "172.0.4.0/24"
   availability_zone = "${var.aws_reg}b"
   tags = {
@@ -55,7 +55,7 @@ resource "aws_subnet" "private2" {
 }
 
 resource "aws_route_table" "rt_public" {
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = aws_vpc.primary.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -68,7 +68,7 @@ resource "aws_route_table" "rt_public" {
 }
 
 resource "aws_route_table" "rt_private" {
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = aws_vpc.primary.id
 
   tags = {
     "Name" = "Terraform - Private"
