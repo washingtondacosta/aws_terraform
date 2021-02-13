@@ -1,0 +1,73 @@
+resource "aws_security_group" "autoscaling" {
+  name        = "autoscaling"
+  description = "Security group that allows ssh/http and all egress traffic"
+  vpc_id      = aws_vpc.vpc.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.loadbalance.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "Auto Scaling"
+  }
+}
+
+resource "aws_launch_configuration" "this" {
+  name_prefix                 = "autoscaling-launcher"
+  image_id                    = aws_instance.ec2.ami
+  instance_type               = "t2.micro"
+  key_name                    = aws_key_pair.keypair1.key_name
+  security_groups             = [aws_security_group.web.id, aws_security_group.autoscaling.id]
+  associate_public_ip_address = true
+
+  user_data = file("files/userdata.sh")
+
+}
+
+resource "aws_autoscaling_group" "this" {
+  name                      = "terraform-autoscaling"
+  vpc_zone_identifier       = [aws_subnet.public1.id, aws_subnet.public2.id]
+  launch_configuration      = aws_launch_configuration.this.name
+  min_size                  = 1
+  max_size                  = 2
+  health_check_grace_period = 300
+  health_check_type         = "ELB"
+  force_delete              = true
+  target_group_arns         = [aws_lb_target_group.tg.arn]
+  /* enabled_metrics           = [var.enabled_metrics] */
+}
+
+resource "aws_autoscaling_policy" "scale-up" {
+  name                   = "Scale Up"
+  autoscaling_group_name = aws_autoscaling_group.this.name
+  adjustment_type        = "ChangeInCapacity"
+  scaling_adjustment     = "1"
+  cooldown               = "900"
+  policy_type            = "SimpleScaling"
+}
+
+resource "aws_autoscaling_policy" "scale-down" {
+  name                   = "Scale Down"
+  autoscaling_group_name = aws_autoscaling_group.this.name
+  adjustment_type        = "ChangeInCapacity"
+  scaling_adjustment     = "-1"
+  cooldown               = "900"
+  policy_type            = "SimpleScaling"
+}
