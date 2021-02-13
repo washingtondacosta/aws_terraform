@@ -33,20 +33,24 @@ resource "aws_launch_configuration" "this" {
   name_prefix                 = "autoscaling-launcher"
   image_id                    = aws_instance.ec2.ami
   instance_type               = "t2.micro"
+
+  depends_on = [
+  aws_db_instance.mysql,
+  ]
+
   key_name                    = aws_key_pair.keypair1.key_name
   security_groups             = [aws_security_group.web.id, aws_security_group.autoscaling.id]
   associate_public_ip_address = true
 
   user_data = file("files/userdata.sh")
-
 }
 
 resource "aws_autoscaling_group" "this" {
   name                      = "terraform-autoscaling"
   vpc_zone_identifier       = [aws_subnet.public1.id, aws_subnet.public2.id]
   launch_configuration      = aws_launch_configuration.this.name
-  min_size                  = 1
-  max_size                  = 2
+  min_size                  = 2
+  max_size                  = 3
   health_check_grace_period = 300
   health_check_type         = "ELB"
   force_delete              = true

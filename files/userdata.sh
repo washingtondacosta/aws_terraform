@@ -14,6 +14,5 @@ sudo mkdir -p /var/www/html/
 sudo rsync -av wordpress/* /var/www/html/
 sudo chown -R www-data:www-data /var/www/html/
 sudo chmod -R 755 /var/www/html/
-sudo cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
 sudo service apache2 restart
 sleep 20

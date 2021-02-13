@@ -1,15 +1,15 @@
 resource "aws_lb" "loadbalance" {
-  name            = "Terraform-LoadBalance"
+  name            = "TFLB"
   security_groups = [aws_security_group.loadbalance.id]
   subnets         = [aws_subnet.public1.id, aws_subnet.public2.id]
 
   tags = {
-    "Name" = "TfLoadBalance"
+    "Name" = "LoadBalance"
   }
 }
 
 resource "aws_lb_target_group" "tg" {
-  name     = "TfLoadBalance"
+  name     = "LoadBalance"
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.vpc.id
